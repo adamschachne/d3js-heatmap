@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+	body {
+		margin-left: 20px;
+	}
+	p {
+		margin-top: 5px;
+		margin-bottom: 5px;
+	}
+</style>
+</style>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<body>
+	<h1>d3.js enter/exit
+		<!-- <a target="_blank" style="font-size: 16px" href="http://bl.ocks.org">popular d3.js examples</a> -->
+	</h1>
+	<form style="margin-bottom: 10px;">CSV data array:<br><input type="text" placeholder='eg. 1,2,3,...' name="data"></form>
+	<button id="addButton" style="height: 25px; width: 200px;">add a paragraph</button>
+	<button id="insertButton" style="height: 25px; width: 200px;">insert data into paragraphs</button>
+	<!-- <button id="clearButton" onClick="location = location" style="height: 25px; width: 50px;">clear</button> -->
+	<button id="clearButton" style="height: 25px; width: 50px;">clear</button>
+
+</body>
+
+<script>
+	var data = [5, 10, 15, 20, 25, 30];
+	var num_paragraphs = 0;
+
+	d3.select("#addButton")
+		.on("click", function() {
+			d3.select("body").append("p")
+				.text(function() {return "paragraph"+(++num_paragraphs)})
+		});
+
+	d3.select("#insertButton").on("click", function() {
+		var data = d3.select("input").property("value").split(',')
+		if (data[0] == "") {data = []}
+
+		var paragraphs = d3.select("body").selectAll("p")
+			// update
+			.data(data)
+				.text(function(d) { return d})
+				.style("color", "black");
+			// u
+		paragraphs.enter()
+			.append("p") // make a new paragraph for each new data
+			.text(function(d) {
+				num_paragraphs++;
+				return d;
+			})
+			.style("color", "blue"); // new paragraphs will be blue
+
+		paragraphs.exit()
+			.each(function() {
+				num_paragraphs--;
+				var s = d3.select(this)
+					.style("color", "red")
+					.style("opacity", 1)
+					.transition().duration(1000)
+					.style("opacity", 0)
+					.remove();
+			});
+	})
+
+	d3.select("#clearButton")
+		.on("click", function() {
+			d3.select("input").property("value","")
+			d3.select("#insertButton").dispatch("click")
+		});
+
+	// d3.select("body").append("form")
+	// 	.html("First name:<br><input type='text' name='firstname'>")
+
+
+</script>

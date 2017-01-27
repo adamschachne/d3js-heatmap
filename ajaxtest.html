@@ -1,0 +1,42 @@
+<html>
+<style>
+</style>
+
+<head>
+
+<script>
+function loadData(str) {
+    if (str == "") {
+    	document.getElementById("txtHint").innerHTML = "Content will be loaded here.";
+        return;
+    } else {
+
+        xmlhttp = new XMLHttpRequest();
+
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("txtHint").innerHTML = this.responseText;
+            }
+        };
+        xmlhttp.open("GET","getdataset.php?q="+str,true);
+        xmlhttp.send();
+    }
+}
+</script>
+</head>
+<body>
+<h1>AJAX load</h1>
+<form>
+	<select name="users" onchange="loadData(this.value)">
+		<option value="">Select a dataset:</option>
+		<option value="1">loboda-2011-colon-expr.txt</option>
+		<option value="2">loboda-2011-colon-idx.txt</option>
+		<option value="3">loboda-2011-colon-ih.txt</option>
+		<option value="4">loboda-2011-colon-survival.txt</option>
+	</select>
+</form>
+<br>
+<div id="txtHint">Content will be loaded here.</div>
+
+</body>
+</html>
