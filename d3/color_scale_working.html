@@ -5,6 +5,13 @@
 	svg {
 		border:2px solid black;
 	}
+	.jscolor {
+		opacity: 0.5; /* change this to 1 */
+		width: 10px;
+		height: 10px;
+		pointer-events: none;
+		position: absolute;
+	}
 </style>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -14,17 +21,13 @@
 	<h1> d3.js continuous scale</h1>
 	<div style="height:100px;" id="canvasDiv">
 		<div> </div>
-		<div style="display: inline;">
-			<input onchange="updateColor()" style="width: 25px; height: 25px; background-image: none;" type="hidden" id="color1" value="ff0000">
-        	<button style="width: 25px; height: 25px; background-image: none;" class="jscolor {valueElement: 'color1'}"></button>
+		<div id="pickerDiv" style="width: 500px; height: 50px">
+			<input id="color1" style="left: 25px;" data-jscolor='{width:100, height: 50, valueElement: "foobar", onFineChange:"updateColor()", padding:0, shadow:false,
+    borderWidth:0, backgroundColor:"transparent", insetColor:"#000"}' class="jscolor" colorActive=false; onchange='this.jscolor.hide();'>
 		</div>
-		<div id="sliderDiv" style="display: inline; position: absolute; left: 190px;">
+		<div id="sliderDiv" style= "position: absolute; left: 190px;">
 			<input type="range" min="2" max="50" value="5" id="blockSlider">
 			<label>5</label>
-		</div>
-		<div style="display: inline; position: absolute; left: 486px;">
-			<input onchange="updateColor()" style="width: 25px; height: 25px; background-image: none;" type="hidden" id="color2" value="ff0000">
-			<button style="width: 25px; height: 25px; background-image: none;" class="jscolor {valueElement: 'color2'}"></button>
 		</div>
 	</div>
 
@@ -38,33 +41,52 @@
 			.attr("height", height)
 
 		var color1 = d3.select("#color1")
-			.attr("value","ff0000");
 		var color2 = d3.select("#color2")
-			.attr("value","0000ff");
 
 		var data = [];
+		var pickerData = [];
+
+		//create groups for rects and circles
+		var rectGroup = canvas.append("g");
 
 		// initial blocks
 		for (var i = 0; i < numBlocks; i++) {
-			canvas.append("rect")
+			rectGroup.append("rect")
 				.attr("x", i*blockWidth)
 				.attr("width", blockWidth)
-				.attr("height", height)
+				.attr("height", height);
 			data.push(i*blockWidth); // data array contains x positions of each block
 		}
+
+		canvas.append("circle")
+			.attr("cx", "25")
+			.attr("cy", "25")
+			.attr("r", "10")
+			.attr("stroke", "#000000") // black outline
+			.attr("stroke-width", "2")
+			.attr("fill", "#ff0000")
+			.attr("id","foobar")
+			.on("click", function() {
+				document.getElementById("color1").jscolor.show()
+			})
 
 		var colorScale = d3.scaleLinear()
 			.domain([data[0],data[data.length-1]]) // input is first and last x-position data
 			.range(['#ff0000','#0000ff']);
 
-		var blocks = canvas.selectAll("rect")
+		var pickers = canvas.selectAll("circle")
+
+		var blocks = rectGroup.selectAll("rect")
 			.data(data)
 			.attr("fill", function(d) {return colorScale(d)});
 
 		function updateColor() {
+			console.log("updateColor");
+			console.log('#'+d3.select("#foobar").html())
 			colorScale.range([
-				'#'+d3.select("#color1").property("value"),
-				'#'+d3.select("#color2").property("value")
+				'#'+d3.select("#foobar").html(),
+				'#000000'
+				//'#'+d3.select("#color2").property("value")
 			]);
 			update()
 		}
@@ -82,7 +104,7 @@
 		});
 
 		function update() {
-			var blocks = canvas.selectAll("rect")
+			var blocks = rectGroup.selectAll("rect")
 				.data(data)
 				.attr("x", function(d) {return d})
 				.attr("width", blockWidth)
