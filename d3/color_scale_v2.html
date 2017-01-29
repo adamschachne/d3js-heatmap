@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+	svg {
+		border:2px solid black;
+	}
+	circle {
+		stroke: black;
+	}
+	.dragging {
+		stroke: white;
+	}
+	.jscolor {
+		opacity: 0;
+		width: 10px;
+		height: 0px;
+		pointer-events: none;
+		position: absolute;
+	}
+</style>
+<head>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="../js/jscolor.js"></script>
+</head>
+
+
+
+<body>
+	<h1>d3js color scale </h1>
+	<div style="height:100px;" id="canvasDiv">
+		<div> </div>
+		<div id="pickerDiv" style="width: 500px; height: 50px">
+			<input id="color1" style="left: 25px;" data-jscolor='{shadow: false, required:false, width:100, height: 50, onFineChange:"updateColor(this, circle1)"}' onchange="this.jscolor.hide()" class="jscolor" >
+			<input id="color2" style="left: 475px;" data-jscolor='{shadow: false, required:false, width:100, height: 50, onFineChange:"updateColor(this, circle2)"}' onchange="this.jscolor.hide()" class="jscolor" >
+		</div>
+		<div style= "position: absolute; left: 120px;">
+			<button onclick="addPivot()" style="height: 25px; width: 100px;">add new pivot</button>
+			<input type="range" min="2" max="100" value="50" id="blockSlider">
+			<label>50</label>
+		</div>
+	</div>
+</body>
+
+<script>
+	var numBlocks = 50;
+	var width = 500;
+	var height = 50;
+	var blockWidth = width/numBlocks;
+	var canvas = d3.select("#canvasDiv").select("div").append("svg")
+		.attr("width", width)
+		.attr("height", height);
+	var pickerDiv = d3.select("#pickerDiv");
+	var data = [];
+	var numPivots = 2;
+	var buffer = 1; // makes width larger by this amount to hide any gaps
+	//create groups for rects and circles
+	var rectGroup = canvas.append("g");
+
+	// initial blocks
+	for (var i = 0; i < numBlocks; i++) {
+		rectGroup.append("rect")
+			.attr("x", i*blockWidth)
+			.attr("width", blockWidth+buffer)
+			.attr("height", height);
+		data.push(i*blockWidth); // data array contains x positions of each block
+	}
+
+	var drag = d3.drag()
+		.on("start", function() { d3.select(this).raise().classed("dragging", true)} )
+		.on("drag", function(d) {
+			d.x += d3.event.dx
+			d3.select(this).attr("cx", function(){
+				return d.x;
+			})
+			d3.select("#"+d.input).style("left", d.x+"px")
+			var domain = [];
+			var range = [];
+			d3.selectAll("circle")
+				.sort(function(d1,d2) {
+					return d1.x >= d2.x ? 1 : -1;
+				})
+				.each(function(d) {
+					domain.push(d.x);
+					range.push("#"+d.color);
+				});
+			colorScale.domain(domain).range(range);
+			update()
+		})
+		.on("end", function() {
+			d3.select(this).classed("dragging", false)
+		});
+
+	canvas.append("circle")
+		.data([{x: 25, y: 25, input: "color1", color: "ff0000"}])
+		.attr("cx", function(d) {return d.x})
+		.attr("cy", function(d) {return d.y})
+		.attr("r", "10")
+		//.attr("stroke", "#000000") // black outline
+		.attr("stroke-width", "2")
+		.attr("fill", "#ff0000")
+		.attr("id","circle1")
+		.on("dblclick", function() {
+			document.getElementById("color1").jscolor.show()
+		})
+		.call(drag);
+
+
+	canvas.append("circle")
+		.data([{x: 475, y: 25, input: "color2", color: "0000ff"}])
+		.attr("cx", function(d) {return d.x})
+		.attr("cy", function(d) {return d.y})
+		.attr("r", "10")
+		.attr("stroke", "#000000") // black outline
+		.attr("stroke-width", "2")
+		.attr("fill", "#0000ff")
+		.attr("id","circle2")
+		.on("dblclick", function() {
+			document.getElementById("color2").jscolor.show()
+		})
+		.call(drag);
+
+	var colorScale = d3.scaleLinear()
+		.domain([25,475]) // input is first and last x-position data
+		.range(['#ff0000','#0000ff']);
+
+	var pickers = canvas.selectAll("circle")
+
+	var blocks = rectGroup.selectAll("rect")
+		.data(data)
+		.attr("fill", function(d) {return colorScale(d)});
+
+	function addPivot() {
+		canvas.append("circle")
+			.data([{x: width/2, y: 25, input: "color"+(++numPivots), color: "00ff00"}])
+			.attr("cx", function(d) {return d.x})
+			.attr("cy", function(d) {return d.y})
+			.attr("r", "10")
+			.attr("stroke", "#000000") // black outline
+			.attr("stroke-width", "2")
+			.attr("fill", "#00ff00")
+			.attr("id","circle"+(numPivots))
+			.on("dblclick", function(d) {
+				console.log(d.input)
+				document.getElementById(d.input).jscolor.show()
+			})
+			.call(drag);
+
+ 		pickerDiv.append("input")
+			.attr("id","color"+numPivots)
+			.style("left", "250px")
+			.attr("data-jscolor",'{shadow: false, required:false, width:100, height: 50, onFineChange:"updateColor(this,'+'circle'+numPivots+')"}')
+			 //"updateColor(this, color'+numPivots+')"}')
+			.attr("onchange", "this.jscolor.hide()")
+			.attr("class","jscolor")
+
+		setTimeout(function() {jsc.init()}, 0); // re-initialize jscolor
+
+		var domain = [];
+		var range = [];
+		d3.selectAll("circle")
+			.sort(function(d1,d2) {
+				return d1.x >= d2.x ? 1 : -1;
+			})
+			.each(function(d) {
+				domain.push(d.x)
+				range.push("#"+d.color)
+			});
+		colorScale.domain(domain).range(range); // update both the domain and range
+		update()
+	}
+
+	function updateColor(picker, target) {
+		d3.select(target)
+			.each(function(d) {
+				d.color = ""+picker
+			})
+			.attr("fill", "#"+picker)
+		var range = []
+		d3.selectAll("circle")
+			.sort(function(d1,d2) {
+				return d1.x >= d2.x ? 1 : -1;
+			})
+			.each(function(d) {
+				range.push("#"+d.color)
+			});
+		colorScale.range(range);
+		update()
+	}
+
+	function closeInput() {
+		console.log("close")
+	}
+
+	d3.select("#blockSlider").on("input", function() {
+		numBlocks = this.value;
+		blockWidth = width/numBlocks;
+		d3.select("label").html(this.value);
+		data = [];
+		for (var i = 0; i < numBlocks; i++) {
+			data[i] = i*blockWidth;
+		}
+		var domain = [];
+		d3.selectAll("circle")
+			.sort(function(d1,d2) {
+				return d1.x >= d2.x ? 1 : -1;
+			})
+			.each(function(d) {
+				domain.push(d.x)
+			});
+		colorScale.domain(domain);
+		//colorScale.domain([data[0],data[data.length-1]]); // input is first and last x-position data
+		update();
+	});
+
+	function update() {
+		var blocks = rectGroup.selectAll("rect")
+			.data(data)
+			.attr("x", function(d) {return d})
+			.attr("width", blockWidth+buffer)
+			.attr("fill", function(d) {return colorScale(d)});
+		blocks.enter().append("rect")
+			.attr("x", function(d) {return d})
+			.attr("width", blockWidth+buffer)
+			.attr("height", height)
+			.attr("fill", function(d) {return colorScale(d)});
+		blocks.exit().remove();
+	}
+
+</script>
