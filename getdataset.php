@@ -17,17 +17,25 @@
 <?php
 $datasets = array(
 	"", //0
-	"loboda-2011-colon-expr.txt", //1
+	/* "loboda-2011-colon-expr.txt", //1
 	"loboda-2011-colon-idx.txt", //2
 	"loboda-2011-colon-ih.txt", //3
-	"loboda-2011-colon-survival.txt" //4
+	"loboda-2011-colon-survival.txt", //4
+	"" */
+	"jsto-colon-expr.txt",
+	"jsto-colon-idx.txt",
+	"jsto-colon-ih.txt",
+	"jsto-colon-info.txt",
+	"jsto-colon-survival.txt",
+	"jsto-colon-thr.txt"
+
 );
 
 $q = intval($_GET['q']);
 $row = 1;
-if (($handle = fopen('../data/'.$datasets[$q],"r")) !== FALSE) {
+if (($handle = fopen('/home/sahoo/test/'.$datasets[$q],"r")) !== FALSE) {
 	echo "<table>";
-	while (($data = fgetcsv($handle, 2000, "\t")) !== FALSE && $row <= 10) {
+	while (($data = fgetcsv($handle, 10000, "\t")) !== FALSE && $row <= 10) {
         $num = count($data);
         //echo "<p> $num fields in line $row: <br /></p>\n";
 		echo "<tr>";
