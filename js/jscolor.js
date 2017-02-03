@@ -1608,6 +1608,8 @@ jsc = {
 				p.btn.style.cursor = 'hand';
 			}
 			p.btn.onmousedown = function () {
+				// this is executed when the close button is pressed
+				console.log(THIS.valueElement);
 				THIS.hide();
 			};
 			p.btnT.style.lineHeight = THIS.buttonHeight + 'px';
