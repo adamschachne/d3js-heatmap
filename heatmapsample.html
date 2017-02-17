@@ -20,6 +20,13 @@
 		pointer-events: none;
 		position: absolute;
 	}
+	svg text {
+		cursor: default;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
 </style>
 <head>
 	<link href="css/bootstrap.min.css" rel="stylesheet">
@@ -72,7 +79,18 @@
 		</div>
 		<div id="svgContainer" style=" float: none; margin: 0 auto; border: 3px solid black"></div>
 		<div class="row">
-			<div class="col-xs-12 col-md-8">.col-xs-12 .col-md-8</div>
+			<div class="col-xs-12 col-md-8">.col-xs-12 .col-md-8
+				<div class="dropdown">
+					<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						Dropdown button
+					</button>
+					<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+						<a class="dropdown-item" href="#">Action</a>
+						<a class="dropdown-item" href="#">Another action</a>
+						<a class="dropdown-item" href="#">Something else here</a>
+					</div>
+				</div>
+			</div>
 			<div class="col-xs-6 col-md-4">.col-xs-6 .col-md-4</div>
 		</div>
 	</div>
@@ -116,7 +134,8 @@
 	// Add an x-axis with label.
 	// var axis = d3.axisBottom(x);
 
-	heatMapSVG.append("g")
+	var blocks = heatMapSVG.append("g").selectAll("blocks")
+		//.data
 		// .append("rect")
 		// 	.attr("width",width)
 		// 	.attr("height",height)
@@ -136,19 +155,36 @@
 
 	// Add a legend for the color values. height 100
 	var legendLength = 300;
+
     var legend = heatMapSVG.append("g")
 		.style("border", "1px solid black")
-		.attr("transform", "translate("+(width+20)+","+(20)+")")
-		.selectAll("rect")
-			.data([{p:""},{p:""},{p:""},{p:""},{p:""},{p:""},{p:""},{p:""},
-				{p:""},{p:""}])
-			.enter().append("rect")
-				.attr("width", 40)
-				.attr("height", 30)
-				.attr("x", 0)
-				.attr("y", function(d,i) {return i*30})
-				.attr("fill", function(d,i) {return colorScale(i)});
+		.attr("transform", "translate("+(width+20)+","+(20)+")");
 
+	legend.selectAll("rect")
+		.data([{p:""},{p:""},{p:""},{p:""},{p:""},{p:""},{p:""},{p:""},
+			{p:""},{p:""}])
+		.enter().append("rect")
+			.attr("width", 30)
+			.attr("height", 30)
+			.attr("x", 0)
+			.attr("y", function(d,i) {return i*30})
+			.attr("fill", function(d,i) {return colorScale(i)});
+
+	var pivotData = [{y: 0, color: "#ff0000"},{y: legendLength, color: "#0000ff"}];
+
+	legend.selectAll(".pivot")
+		.data(pivotData)
+			.enter().append("g")
+			.each(function(d,i) {
+				d3.select(this).attr("transform", "translate(30,"+d.y+")");
+			})
+			.append("path")
+				.style("width", 64)
+				.style("height",64)
+				.attr("fill","#000000")
+				.attr("d","M26 -10 L26 10 L0 0 Z")
+
+	//add text above the legend
 	heatMapSVG.append("text")
 		.attr("class", "label")
 		.attr("x", width + 20)
