@@ -23,6 +23,23 @@
 			</tr>
 			<tr><th colspan="10"><hr></th></tr>
 			<tr>
+				<td><a href="./heatmapsample.html" style="font-size: 16px">sample heatmap</a></td>
+				<td>
+					<?php
+						$filename = "./heatmapsample.html";
+						if (file_exists($filename)) {
+							echo date("F d Y H:i:s.", filemtime($filename));
+						}
+						else {
+							echo "couldnt find file";
+						}
+					?>
+				</td>
+				<td>
+					concept for a 2D heatmap with Bootstrap
+				</td>
+			</tr>
+			<tr>
 				<td><a href="./d3/color_scale_v2.html" style="font-size: 16px">color scale with pivots</a></td>
 				<td>
 					<?php
