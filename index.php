@@ -23,10 +23,10 @@
 			</tr>
 			<tr><th colspan="10"><hr></th></tr>
 			<tr>
-				<td><a href="./heatmapsample.html" style="font-size: 16px">sample heatmap</a></td>
+				<td><a href="./heatmap/" style="font-size: 16px">heatmap</a></td>
 				<td>
 					<?php
-						$filename = "./heatmapsample.html";
+						$filename = "./heatmap/index.html";
 						if (file_exists($filename)) {
 							echo date("F d Y H:i:s.", filemtime($filename));
 						}
