@@ -42,6 +42,12 @@
 		from { transform: scale(1) rotate(0deg);}
 		to { transform: scale(1) rotate(360deg);}
 	}
+
+	.scrollable-menu {
+		height: auto;
+		max-height: 300px;
+		overflow-x: hidden;
+	}
 </style>
 <head>
 	<link href="../css/bootstrap.min.css" rel="stylesheet">
@@ -52,103 +58,45 @@
 	<script src="../js/bootstrap.min.js"></script>
 	<script src="../js/jscolor.js"></script>
 
-	<!-- Latest compiled and minified CSS -->
+	<!--  bootstrap-select -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/css/bootstrap-select.min.css">
-
-	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
-
-	<!-- (Optional) Latest compiled and minified JavaScript translation files -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/i18n/defaults-en_US.min.js"></script>
-
-	<script>
-		function loadHtml(url, id) {
-			var isArray = false;
-			if (id.length != null) {
-				isArray = true;
-			}
-	        xmlhttp = new XMLHttpRequest();
-
-	        xmlhttp.onreadystatechange = function() {
-	            if (this.readyState == 4 && this.status == 200) {
-					for (var i = 0; i < id.length; i++) {
-						document.getElementById(id[i]).innerHTML = this.responseText;
-					}
-	            }
-				else {
-					for (var i = 0; i < id.length; i++) {
-						document.getElementById(id[i]).innerHTML = "failed to load resource";
-					}
-				}
-	        };
-	        xmlhttp.open("GET",url,true);
-	        xmlhttp.send();
-		}
-	</script>
 	<script>
 		var genes;
 
-		// get the gene ids
-		d3.request("test.php", function(data) {
+		// get 100 gene ids
+		d3.request("read_ids.php", function(data) {
+			$('#geneButton').html('Select a gene<span class="caret"></span>');
 			genes = JSON.parse(data.response);
+			populateDropdowns(genes.slice(0, 100)); // take only the first 100 genes
 		});
 	</script>
 </head>
 
-
-
 <body>
 	<nav class="navbar navbar-inverse navbar-fixed-top">
 		<div class="container">
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-					<span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" href="#">Name</a>
-			</div>
+
 			<div id="navbar" class="navbar-collapse collapse">
-				<ul class="nav navbar-nav">
-					<li class="active"><a href="#">Home</a></li>
-					<li><a href="#about">About</a></li>
-					<li><a href="#contact">Contact</a></li>
-					<li class="dropdown">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-						<ul class="dropdown-menu">
-							<li><a href="#">Action</a></li>
-							<li><a href="#">Another action</a></li>
-							<li><a href="#">Something else here</a></li>
-							<li role="separator" class="divider"></li>
-							<li class="dropdown-header">Nav header</li>
-							<li><a href="#">Separated link</a></li>
-							<li><a href="#">One more separated link</a></li>
-						</ul>
-					</li>
-				</ul>
-			</div><!--/.nav-collapse -->
+			</div>
 		</div>
 	</nav>
 	<div class="container theme-showcase" style="width: 970px !important;" role="main">
-		<div class="jumbotron" style="padding-top: 10px; padding-bottom: 10px;">
-			<h1>sample heatmap layout</h1>
-		</div>
+		<div class="btn-group">
+            <button id="geneButton" type="button" style="width: 175px;" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+
+				 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+				<!-- Select a gene<span class="caret"></span> -->
+			</button>
+            <ul id="geneMenu" class="dropdown-menu scrollable-menu" role="menu">
+                <!-- <li><a href="#">Action</a></li> -->
+            </ul>
+        </div>
 		<div  style="display: inline;">
-			<select id="genePicker1" class="selectpicker" data-live-search="true" data-size="5">
+			<!-- <select id="genePicker1" class="selectpicker" data-live-search="true" data-size="10">
 				<option data-content='<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Loading...'></option>
-			  <!-- <option data-tokens="ketchup mustard">Hot Dog, Fries and a Soda</option>
-			  <option data-tokens="mustard">Burger, Shake and a Smile</option>
-			  <option data-tokens="frosting">Sugar, Spice and all things nice</option> -->
-			</select>
-		</div>
-		<div style="display: inline;">
-			<!-- <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Pick gene 2
-				<span class="caret"></span>
-			</button> -->
-			<select id="genePicker2" class="selectpicker" data-live-search="true" data-size="5">
-					<option data-content='<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Loading...'></option>
-			</select>
+			</select> -->
 		</div>
 		<div id="svgContainer" style=" float: none; margin: 0 auto; border: 3px solid black"></div>
 		<!-- <div class="row">
@@ -159,6 +107,28 @@
 </body>
 
 <script>
+	$(document).ready(function() {
+		$('#geneMenu').scroll(function() {
+			console.log("scroll");
+		});
+	})
+	function populateDropdowns(items) {
+		var options = d3.select("#geneMenu").selectAll("li");
+
+		options.remove(); // remove options
+
+		//	<!-- <li><a href="#">Action</a></li> -->
+		options.data(items)
+		.enter()
+			.append("li")
+			.append("a")
+			.html(function(d,i) {return d});
+		options.exit().remove(); // remove any options not in the data
+
+		console.log("refresh dropdown");
+		$('.selectpicker').selectpicker('refresh');
+	}
+
 	var margin = {top: 30, right: 120, bottom: 30, left: 50},
 	    width = 960 - margin.left - margin.right,
 	    height = 500 - margin.top - margin.bottom;
@@ -280,7 +250,6 @@
 			.attr("fill", function(d) {return colorScale(d)});
 		blocks.exit().remove();
 	}
-	//loadHtml("test.php", ["genePicker1","genePicker2"]);
 
 </script>
 
