@@ -44,10 +44,32 @@
 	}
 
 	.scrollable-menu {
+		width: 300px;
 		height: auto;
 		max-height: 300px;
 		overflow-x: hidden;
 	}
+
+	.col-centered {
+		text-align: center;
+		float: none;
+		margin: 0 auto;
+	}
+
+	.gene-select {
+		margin-right: 15px;
+	}
+
+	.modal-dialog{
+		position: relative;
+		top: 20%;
+	}
+
+	.modal-pagination {
+		margin: 0px !important;
+	    display: block !important;
+	}
+
 </style>
 <head>
 	<link href="../css/bootstrap.min.css" rel="stylesheet">
@@ -65,11 +87,13 @@
 	<script>
 		var genes;
 
-		// get 100 gene ids
+		// get the gene ids
 		d3.request("read_ids.php", function(data) {
-			$('#geneButton').html('Select a gene<span class="caret"></span>');
 			genes = JSON.parse(data.response);
-			populateDropdowns(genes.slice(0, 100)); // take only the first 100 genes
+			populateDropdowns(genes.slice(0, 100), function() {
+				$('.gene-select').html('No gene selected');
+				$('.gene-select').tooltip('show')
+			}); // take only the first 100 genes
 		});
 	</script>
 </head>
@@ -77,56 +101,109 @@
 <body>
 	<nav class="navbar navbar-inverse navbar-fixed-top">
 		<div class="container">
-
 			<div id="navbar" class="navbar-collapse collapse">
 			</div>
 		</div>
 	</nav>
 	<div class="container theme-showcase" style="width: 970px !important;" role="main">
-		<div class="btn-group">
-            <button id="geneButton" type="button" style="width: 175px;" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-
-				 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
-				<!-- Select a gene<span class="caret"></span> -->
-			</button>
-            <ul id="geneMenu" class="dropdown-menu scrollable-menu" role="menu">
-                <!-- <li><a href="#">Action</a></li> -->
-            </ul>
-        </div>
-		<div  style="display: inline;">
-			<!-- <select id="genePicker1" class="selectpicker" data-live-search="true" data-size="10">
-				<option data-content='<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Loading...'></option>
-			</select> -->
+		<div class="starter-template">
+			<div class="col-centered">
+				<h3>dataset: <span id='dataset'>jsto-colon</span></h3>
+			</div>
 		</div>
-		<div id="svgContainer" style=" float: none; margin: 0 auto; border: 3px solid black"></div>
-		<!-- <div class="row">
 
-			<div class="col-xs-6 col-md-4">.col-xs-6 .col-md-4</div>
-		</div> -->
-	</div>
+		<div id="svgContainer" style=" float: none; margin: 0 auto;"></div>
+
+		<div class="col-lg-11 col-centered">
+			<div style="padding-top: 20px;" class="btn-group">
+	            <button title="click here to select a gene" onclick="$(this).tooltip('hide')" id="geneButton" data-toggle="modal" data-target="#myModal" type="button" style="width: 175px;" class="gene-select btn btn-default" data-toggle="dropdown">
+
+					 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+					<!-- Select a gene<span class="caret"></span> -->
+				</button>
+				<button data-toggle="modal" data-target="#myModal" type="button" style="width: 175px;" class="gene-select btn btn-default" data-toggle="dropdown">
+
+					 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+					<!-- Select a gene<span class="caret"></span> -->
+				</button>
+
+	        </div>
+		</div>
+
+		<div class="modal fade" id="myModal" role="dialog">
+			<div class="modal-dialog">
+
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Select a gene</h4>
+					</div>
+					<div class="modal-body">
+						<ul id="geneMenu" class="list-group">
+			                <!-- <button href="#">Action</button> -->
+
+			            </ul>
+					</div>
+					<div class="modal-footer">
+						<ul class="pagination modal-pagination">
+							<li><a href="#">1</a></li>
+							<li><a href="#">2</a></li>
+							<li><a href="#">3</a></li>
+							<li><a href="#">4</a></li>
+							<li><a href="#">5</a></li>
+						</ul>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+
 </body>
 
 <script>
 	$(document).ready(function() {
-		$('#geneMenu').scroll(function() {
-			console.log("scroll");
-		});
+		var scrollBuffer = 100; // 100 pixels from bottom -> load more
+		var isLoading = false;
+		// geneMenu.scroll(function(){
+		// 	//scrollTop refers to the top of the scroll position, which will be scrollHeight - offsetHeight
+		// 	if (geneMenu[0].scrollHeight - geneMenu.scrollTop() < geneMenu.height() + scrollBuffer && isLoading == false)
+		// 	{
+		// 		isLoading = true;
+		// 		console.log("loading");
+		// 		populateDropdowns(genes.slice(100, 200), function() {
+		// 			geneMenu[0].scrollTop = 0;
+		// 			isLoading = false;
+		// 			console.log("done loading");
+		// 		})
+		// 	}
+		// });
+		$('body').on('click', '.list-group-item', function () {
+			console.log(this);
+		})
 	})
-	function populateDropdowns(items) {
-		var options = d3.select("#geneMenu").selectAll("li");
 
-		options.remove(); // remove options
+	function populateDropdowns(items, cb) {
+		//console.log(items);
+		var options = d3.select("#geneMenu").selectAll("a");
+		console.log(options.data());
+		//options.remove(); // remove options
 
 		//	<!-- <li><a href="#">Action</a></li> -->
 		options.data(items)
-		.enter()
-			.append("li")
-			.append("a")
-			.html(function(d,i) {return d});
-		options.exit().remove(); // remove any options not in the data
+			.each(function(){
+				d3.select(this)
+					.html(function(d) {return d});
+			})
+			.enter()
+				.append("a")
+				.attr("class", "list-group-item")
+				.html(function(d,i) {return d});
+		//options.exit().remove(); // remove any options not in the data
 
-		console.log("refresh dropdown");
-		$('.selectpicker').selectpicker('refresh');
+		cb();
+		//$('.selectpicker').selectpicker('refresh');
 	}
 
 	var margin = {top: 30, right: 120, bottom: 30, left: 50},
