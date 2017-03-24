@@ -68,6 +68,7 @@
 	.modal-pagination {
 		margin: 0px !important;
 	    display: block !important;
+		float: left;
 	}
 
 	#geneMenu > .list-group-item {
@@ -125,32 +126,34 @@
 
 		<div class="col-lg-11 col-centered">
 			<div class="btn-group">
-	            <button data-placement="left" title="click here to select a gene" onclick="$('.gene-select').tooltip('destroy')" id="geneButton" data-toggle="modal" data-target="#myModal" type="button" style="width: 175px;" class="gene-select btn btn-default disabled" data-toggle="dropdown">
+				<!-- button 1 -->
+	            <button data-placement="left" title="click here to select a gene" data-value="0" data-toggle="modal" data-target="#selectionModal" type="button" style="width: 175px;" class="gene-select btn btn-default disabled" data-toggle="dropdown">
 					 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
 				</button>
-				<button onclick="$('.gene-select').tooltip('destroy')" data-toggle="modal" data-target="#myModal" type="button" style="width: 175px;" class="gene-select btn btn-default disabled" data-toggle="dropdown">
+				<!-- button 2 -->
+				<button data-value="1" data-toggle="modal" data-target="#selectionModal" type="button" style="width: 175px;" class="gene-select btn btn-default disabled" data-toggle="dropdown">
 					 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
 				</button>
 	        </div>
 		</div>
 
-		<div class="modal fade" id="myModal" role="dialog">
+		<div class="modal fade" data-backdrop="static" id="selectionModal" role="dialog">
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 class="modal-title">Select a gene</h4>
+						<h4 style="text-align: center;" class="modal-title">Select a gene</h4>
 					</div>
 					<div class="modal-body">
 						<ul id="geneMenu" class="list-group"></ul>
 					</div>
 					<div class="modal-footer">
-						<nav aria-label="...">
-							<ul class="pager modal-pagination">
-								<li class="previous disabled"><a href="#"><span aria-hidden="true">&larr;</span>Previous</a></li>
-								<li class="next"><a href="#">Next<span aria-hidden="true">&rarr;</span></a></li>
-							</ul>
-						</nav>
+						<ul class="pager modal-pagination">
+							<li class="disabled"><a><span aria-hidden="true">&larr;</span>Previous</a></li>
+							<li class=""><a>Next<span aria-hidden="true">&rarr;</span></a></li>
+						</ul>
+						<h4 id="selectedGene" style="display: inline; padding-right: 10px;"></h4>
+						<button id="selectGeneButton" type="button" class="btn btn-default disabled">Select gene</button>
 					</div>
 				</div>
 			</div>
@@ -158,17 +161,6 @@
 </body>
 
 <script>
-	$(document).ready(function() {
-		var scrollBuffer = 100; // 100 pixels from bottom -> load more
-		var isLoading = false;
-
-		$('body').on('click', '.list-group-item', function () {
-			$('.list-group-item').removeClass('active');
-			$(this).addClass('active');
-			var geneID = d3.select(this).datum(); // "AFFX-BioDn-5_at"
-			console.log(geneID);
-		})
-	})
 
 	function populateDropdowns(items, cb) {
 		var options = d3.select("#geneMenu").selectAll("a");
@@ -179,12 +171,50 @@
 			})
 			.enter()
 				.append("a")
-				.attr("class", "list-group-item")
+				.attr("class", "list-group-item geneChoice")
 				.html(function(d,i) {return d});
 
 		options.exit().remove(); // remove exit selection; should only happen on the last page
 		cb(); // callback when done
 	}
+
+	$(document).ready(function() {
+		var scrollBuffer = 100; // 100 pixels from bottom -> load more
+		var isLoading = false;
+
+		$('body').on('click', '.geneChoice', function () {
+			$('.geneChoice').removeClass('active');
+			$(this).addClass('active');
+			$('#selectGeneButton').attr("class", "btn btn-primary")
+			var geneID = d3.select(this).datum(); // "AFFX-BioDn-5_at"
+			$('#selectedGene').html(geneID);
+
+			// remove previous handler
+			$('body').off('click', '#selectGeneButton');
+			// gene is selected -> calculate heatmap
+			$('body').on('click', '#selectGeneButton', function() {
+				if (currentGeneSelectIndex == null) {
+					return;
+				}
+				selected_gene[currentGeneSelectIndex] = geneID;
+
+				$('#selectionModal').modal('hide')
+			});
+		})
+
+		$('body').on('click', '.gene-select', function () {
+			currentGeneSelectIndex = $(this).data('value');
+			$('.gene-select').tooltip('destroy');
+		})
+
+		$('#selectionModal').on('show.bs.modal', function () {
+			// reset modal content
+			$('#acceptGene').addClass('disabled');
+		})
+	})
+
+
+	var selected_gene = [];
 
 	var margin = {top: 30, right: 120, bottom: 30, left: 50},
 	    width = 960 - margin.left - margin.right,
