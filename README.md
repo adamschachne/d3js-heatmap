@@ -1,1 +1,1 @@
-# d3js-heatmap
+heatmap

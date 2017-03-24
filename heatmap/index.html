@@ -102,7 +102,7 @@
 				$('.gene-select').html('No gene selected')
 					.removeClass('disabled')
 					.tooltip('show')
-					.data('page', 1);
+					.data('page', 0);
 			});
 		});
 	</script>
@@ -127,11 +127,11 @@
 		<div class="col-lg-11 col-centered">
 			<div id="bottomButtons" class="btn-group">
 				<!-- button 1 -->
-	            <button data-placement="left" title="click here to select a gene" data-value="0" data-toggle="modal" data-target="#selectionModal" type="button" style="width: 175px;" class="gene-select btn btn-default disabled" data-toggle="dropdown">
+	            <button data-placement="left" title="click here to select a gene" data-value="0" type="button" style="width: 175px;" class="gene-select btn btn-default disabled">
 					 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
 				</button>
 				<!-- button 2 -->
-				<button data-value="1" data-toggle="modal" data-target="#selectionModal" type="button" style="width: 175px;" class="gene-select btn btn-default disabled" data-toggle="dropdown">
+				<button data-value="1" data-toggle="modal" type="button" style="width: 175px;" class="gene-select btn btn-default disabled">
 					 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
 				</button>
 	        </div>
@@ -142,15 +142,16 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 style="text-align: center;" class="modal-title">Select a gene</h4>
+						<h4 style="text-align: center;" class="modal-title">Select a gene ID</h4>
 					</div>
 					<div class="modal-body">
 						<ul id="geneMenu" class="list-group"></ul>
+						<h5 id="modalPageInfo"></h5>
 					</div>
 					<div class="modal-footer">
 						<ul class="pager modal-pagination">
-							<li class="disabled"><a><span aria-hidden="true">&larr;</span>Previous</a></li>
-							<li class=""><a>Next<span aria-hidden="true">&rarr;</span></a></li>
+							<li class="disabled"><a id="prevButton" ><span aria-hidden="true">&larr;</span>Previous</a></li>
+							<li class=""><a id="nextButton">Next<span aria-hidden="true">&rarr;</span></a></li>
 						</ul>
 						<h4 id="selectedGene" style="display: inline; padding-right: 10px;"></h4>
 						<button id="selectGeneButton" type="button" class="btn btn-default disabled">Select gene</button>
@@ -178,6 +179,34 @@
 		cb(); // callback when done
 	}
 
+	// opens the selection modal at the correct page and highlights the selected geneID
+	function showModal(page, geneID) {
+		$('#selectGeneButton')
+			.attr("class", "btn btn-default disabled")
+			.off('click');
+		if (geneID != null) {
+			$('#selectedGene').html(geneID);
+		}
+		else {
+			$('#selectedGene').html("");
+		}
+
+		var geneIndex = page*15;
+
+		populateDropdowns(genes.slice(geneIndex, geneIndex + 15), function() {
+			d3.select("#geneMenu").selectAll("a")
+				.attr("class", function(d) {
+					if (d == geneID) {
+						return "list-group-item geneChoice active";
+					}
+					else {
+						return "list-group-item geneChoice";
+					}
+				})
+			$('#selectionModal').modal('show');
+		});
+	}
+
 	// function updateGenes() {
 	// 	d3.selectAll(".gene-select").data(selected_gene)
 	// 		.each(function(d) {
@@ -198,15 +227,19 @@
 			$('#selectedGene').html(geneID);
 
 			// remove previous handler
-			$('body').off('click', '#selectGeneButton');
-			// gene is selected -> calculate heatmap
-			$('body').on('click', '#selectGeneButton', function() {
+			$('#selectGeneButton').off('click');
+
+			// gene is selected -> calculate heatmap TODO
+			$('#selectGeneButton').on('click', function() {
+				console.log("awodunbawd");
 				if (currentGeneSelectIndex == null) {
 					return;
 				}
-				//console.log(currentGeneSelectIndex);
 				selected_gene[currentGeneSelectIndex] = geneID;
-				$('.gene-select[data-value="'+currentGeneSelectIndex+'"]').html(geneID);
+				$('.gene-select[data-value="'+currentGeneSelectIndex+'"]')
+					.html(geneID)
+					.attr("class", "gene-select btn btn-primary");
+
 				$('#selectionModal').modal('hide')
 			});
 		})
@@ -214,6 +247,17 @@
 		$('body').on('click', '.gene-select', function () {
 			currentGeneSelectIndex = $(this).data('value');
 			$('.gene-select').tooltip('destroy');
+			var page = $(this).data('page');
+			var geneID = selected_gene[currentGeneSelectIndex];
+			showModal(page, geneID);
+		})
+
+		$('body').on('click', '#nextButton', function () {
+
+		})
+
+		$('body').on('click', '#prevButton', function () {
+
 		})
 
 		$('#selectionModal').on('show.bs.modal', function () {
@@ -223,7 +267,7 @@
 	})
 
 
-	var selected_gene = [];
+	var selected_gene = []; // geneID for each of the gene selectors
 
 	var margin = {top: 30, right: 120, bottom: 30, left: 50},
 	    width = 960 - margin.left - margin.right,
