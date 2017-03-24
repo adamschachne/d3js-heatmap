@@ -125,7 +125,7 @@
 		<div id="svgContainer" style=" float: none; margin: 0 auto;"></div>
 
 		<div class="col-lg-11 col-centered">
-			<div class="btn-group">
+			<div id="bottomButtons" class="btn-group">
 				<!-- button 1 -->
 	            <button data-placement="left" title="click here to select a gene" data-value="0" data-toggle="modal" data-target="#selectionModal" type="button" style="width: 175px;" class="gene-select btn btn-default disabled" data-toggle="dropdown">
 					 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
@@ -178,6 +178,14 @@
 		cb(); // callback when done
 	}
 
+	// function updateGenes() {
+	// 	d3.selectAll(".gene-select").data(selected_gene)
+	// 		.each(function(d) {
+	// 			console.log(d)
+	// 		})
+	// 		.html(function(d) {return d});
+	// }
+
 	$(document).ready(function() {
 		var scrollBuffer = 100; // 100 pixels from bottom -> load more
 		var isLoading = false;
@@ -196,8 +204,9 @@
 				if (currentGeneSelectIndex == null) {
 					return;
 				}
+				//console.log(currentGeneSelectIndex);
 				selected_gene[currentGeneSelectIndex] = geneID;
-
+				$('.gene-select[data-value="'+currentGeneSelectIndex+'"]').html(geneID);
 				$('#selectionModal').modal('hide')
 			});
 		})
