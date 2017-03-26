@@ -4,7 +4,7 @@
 
 <style>
 	body {
-		padding-top: 70px;
+		padding-top: 40px;
 		padding-bottom: 30px;
 	}
 	circle {
@@ -80,7 +80,7 @@
 <head>
 	<link href="../css/bootstrap.min.css" rel="stylesheet">
 	<link href="../css/bootstrap-theme.min.css" rel="stylesheet">
-	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="../js/d3.v4.min.js"></script>
 	<script src="https://d3js.org/d3-axis.v1.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	<script src="../js/bootstrap.min.js"></script>
@@ -104,6 +104,7 @@
 					.tooltip('show')
 					.data('page', 0);
 			});
+			loadDataset();
 		});
 	</script>
 </head>
@@ -125,16 +126,12 @@
 		<div id="svgContainer" style=" float: none; margin: 0 auto;"></div>
 
 		<div class="col-lg-11 col-centered">
-			<div id="bottomButtons" class="btn-group">
-				<!-- button 1 -->
-	            <button data-placement="left" title="click here to select a gene" data-value="0" type="button" style="width: 175px;" class="gene-select btn btn-default disabled">
-					 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
-				</button>
-				<!-- button 2 -->
-				<button data-value="1" data-toggle="modal" type="button" style="width: 175px;" class="gene-select btn btn-default disabled">
-					 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
-				</button>
-	        </div>
+			<button data-placement="left" title="click here to select a gene" data-value="0" type="button" style="width: 175px;" class="gene-select btn btn-default disabled">
+				 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+			</button>
+			<button data-value="1" data-toggle="modal" type="button" style="width: 175px;" class="gene-select btn btn-default disabled">
+				 Loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+			</button>
 		</div>
 
 		<div class="modal fade" data-backdrop="static" id="selectionModal" role="dialog">
@@ -162,6 +159,41 @@
 </body>
 
 <script>
+
+	var selected_gene = []; // geneID for each of the gene selectors
+	var gene_data = [];
+	var columns;
+
+	// loads a user-input dataset TODO
+	function loadDataset() {
+		// ask user for delimiters, column names, etc.
+		// TODO
+		createColumns();
+	}
+
+	// gets the first row of the data, and creates the x-axis
+	function createColumns() {
+		d3.request("read_columns.php", function(data) {
+			if (data == "-1") {
+				console.log("error getting columns");
+			}
+			else {
+				columns = JSON.parse(data.response);
+				var numCols = columns.length;
+				if (width/numCols < 12) return; // dont show x-axis if there are too many points TODO
+				console.log(columns);
+				x_axis.selectAll("text")
+					.data(columns)
+					.enter().append("text")
+						.text(function(d) { return d; })
+						.attr("transform", function(d,i) {
+							return "translate("+i*width/numCols+","+0+") rotate("+(-65)+")";
+						})
+						//.attr("x", function(d, i) { return i * width/numCols; })
+						//.attr("y", 0)
+			}
+		})
+	}
 
 	function populateDropdowns(items, cb) {
 		var options = d3.select("#geneMenu").selectAll("a");
@@ -207,31 +239,66 @@
 		});
 	}
 
-	// function updateGenes() {
-	// 	d3.selectAll(".gene-select").data(selected_gene)
-	// 		.each(function(d) {
-	// 			console.log(d)
-	// 		})
-	// 		.html(function(d) {return d});
-	// }
+	// index in selected_gene of which needs to be requested
+	function updateHeatmap(gene_index) {
+		var numRows = gene_data.length;
+		var rectWidth = width/columns.length;
+
+		// geneID data in samples
+		var sampleGroups = samples.selectAll("g").data(selected_gene)
+		// do something with update selection TODO
+		// if the selected gene changes etc..
+
+		sampleGroups.enter().append("g")
+			.attr("class", function(d) {return d;})
+			.selectAll("rect").data(function(d,i) {return gene_data[i];}) // data changes
+			.enter().append("rect")
+				.attr("width", rectWidth)
+				.attr("height", function() {
+					if (numRows == 1) {
+						return height/2;
+					}
+					else {
+						return height/numRows;
+					}
+				})
+				.attr("x", function(d,i) {return i*rectWidth})
+				.attr("y", function(d,i) {
+					if (numRows == 1) {
+						return height/4;
+					}
+					else {
+						var index = selected_gene.indexOf(d3.select(this.parentNode).datum());
+						return height/numRows*index;
+					}
+				})
+				.attr("fill", function(d,i) {return colorScale(d)});
+	}
 
 	$(document).ready(function() {
 		var scrollBuffer = 100; // 100 pixels from bottom -> load more
 		var isLoading = false;
 
 		$('body').on('click', '.geneChoice', function () {
+			var geneID = d3.select(this).datum(); // "AFFX-BioDn-5_at"
+
+			// highlight this choice
 			$('.geneChoice').removeClass('active');
 			$(this).addClass('active');
 			$('#selectGeneButton').attr("class", "btn btn-primary")
-			var geneID = d3.select(this).datum(); // "AFFX-BioDn-5_at"
-			$('#selectedGene').html(geneID);
 
-			// remove previous handler
+			$('#selectedGene').html(geneID);
+			// remove previous handler and return
 			$('#selectGeneButton').off('click');
+
+			// check if its already the selected geneID
+			if (selected_gene[currentGeneSelectIndex] == geneID) {
+				$('#selectGeneButton').attr("class", "btn btn-default disabled");
+				return;
+			}
 
 			// gene is selected -> calculate heatmap TODO
 			$('#selectGeneButton').on('click', function() {
-				console.log("awodunbawd");
 				if (currentGeneSelectIndex == null) {
 					return;
 				}
@@ -241,6 +308,19 @@
 					.attr("class", "gene-select btn btn-primary");
 
 				$('#selectionModal').modal('hide')
+				// start calculating here
+
+				var query = encodeURI(selected_gene[currentGeneSelectIndex]);
+				d3.request("genedata.php?q="+query, function(data) {
+					if (data == "-1") {
+						console.log("error");
+					}
+					else {
+						gene_data[currentGeneSelectIndex] = new Array();
+						gene_data[currentGeneSelectIndex] = JSON.parse(data.response);
+						updateHeatmap(currentGeneSelectIndex);
+					}
+				});
 			});
 		})
 
@@ -253,11 +333,11 @@
 		})
 
 		$('body').on('click', '#nextButton', function () {
-
+			// increase page TODO
 		})
 
 		$('body').on('click', '#prevButton', function () {
-
+			// go back a page TODO
 		})
 
 		$('#selectionModal').on('show.bs.modal', function () {
@@ -265,9 +345,6 @@
 			$('#acceptGene').addClass('disabled');
 		})
 	})
-
-
-	var selected_gene = []; // geneID for each of the gene selectors
 
 	var margin = {top: 30, right: 120, bottom: 30, left: 50},
 	    width = 960 - margin.left - margin.right,
@@ -277,50 +354,51 @@
 		.attr("height", 500)
 		.append("g")
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-			.style("border", "3px solid black");
+			//.style("border", "3px solid black");
 
-	var buckets = [{id:"1"},{id:"2"},{id:"3"},{id:"4"},{id:"5"}];
-	// a.forEach(function(element) {
-	// 	console.log(element);
-	// });
-	var x = d3.scaleLinear().range([0, width]),
-		y = d3.scaleLinear().range([height, 0]);
-	x.domain(d3.extent(buckets, function(d) { return d.id; }));
+	// has to be before the samples otherwise it will cover
+	var background = heatMapSVG.append("rect")
+		.attr("class", "bg")
+		.attr("width", width)
+		.attr("height", height)
+		.attr("fill", "#EEE");
+
+	var samples = heatMapSVG.append("g")// no selection initially
+		.attr("class", "geneSamples");
+
+	// var xscale = d3.scaleLinear().range([0, width]).domain([0]);
+	// var yscale = d3.scaleLinear().range([height, 0]).domain([0]);
+	//x_axis.domain(d3.extent(samples, function(d) { return d.id; }));
 	// Add an x-axis with label.
 	// var axis = d3.axisBottom(x);
+		// .data([1,2,3,4,5])
+		// .enter().append("rect")
 
-	var blocks = heatMapSVG.append("g").selectAll("blocks")
-		//.data
-		// .append("rect")
-		// 	.attr("width",width)
-		// 	.attr("height",height)
-		// 	.attr("fill", "#EEEEEE")
-
-	heatMapSVG.append("g")
-		.attr("class", "x axis")
-		.attr("transform", "translate(0," + height + ")")
-		.call(d3.axisBottom(x))
-	heatMapSVG.append("g")
-		.attr("class", "y axis")
-		.call(d3.axisLeft(y))
+	// axes
+	var x_axis = heatMapSVG.append("g")
+		.attr("class", "x-axis")
+		//.attr("transform", "translate(0," + height + ")")
+		//.call(d3.axisTop(xscale).ticks(0))
+	var y_axis = heatMapSVG.append("g")
+		.attr("class", "y-axis")
+		//.call(d3.axisLeft(yscale).ticks(0)) // the axis is created here
 
 	var colorScale = d3.scaleLinear()
-		.domain([0,10]) // input is first and last x-position data
-		.range(['#ff0000','#0000ff']);
+		.domain([0,10]) // what kind of input span
+		.range(['#ff0000','#0000ff']); // mapped to this color range output
 
 	// Add a legend for the color values. height 100
 	var legendLength = 300;
 
     var legend = heatMapSVG.append("g")
 		.style("border", "1px solid black")
-		.attr("transform", "translate("+(width+20)+","+(20)+")");
+		.attr("transform", "translate("+(width+20)+","+(100)+")");
 
 	var scaleRectangleWidth = 30,
 		scaleRectangleHeight = 30;
 
 	legend.selectAll("rect")
-		.data([{p:""},{p:""},{p:""},{p:""},{p:""},{p:""},{p:""},{p:""},
-			{p:""},{p:""}])
+		.data([4, 4.2, 4.4, 4.9 , 5.4, 6, 6.5, 6.8, 7, 7.3])
 		.enter().append("rect")
 			.attr("width", scaleRectangleWidth)
 			.attr("height", scaleRectangleHeight)
@@ -347,7 +425,7 @@
 	heatMapSVG.append("text")
 		.attr("class", "label")
 		.attr("x", width + 20)
-		.attr("y", 10)
+		.attr("y", 90)
 		.attr("dy", ".35em")
 		.text("Legend");
 

@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 $row = 0;
 $output = array();
 if (($handle = fopen('/home/sahoo/test/jsto-colon-idx.txt',"r")) !== FALSE) {
-	while (($data = fgetcsv($handle, 10000, "\t")) !== FALSE) { //read 100 rows at max
+	while (($data = fgetcsv($handle, 1000, "\t")) !== FALSE) { //read 100 rows at max
 		$num = count($data);
 		if ($row == 0) {
 			// do nothing for first row or less than target row

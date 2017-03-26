@@ -40,10 +40,10 @@
 				</td>
 			</tr>
 			<tr>
-				<td><a href="./d3/color_scale_v2.html" style="font-size: 16px">color scale with pivots</a></td>
+				<td><a href="./test/color_scale_v2.html" style="font-size: 16px">color scale with pivots</a></td>
 				<td>
 					<?php
-						$filename = "./d3/color_scale_v2.html";
+						$filename = "./test/color_scale_v2.html";
 						if (file_exists($filename)) {
 							echo date("F d Y H:i:s.", filemtime($filename));
 						}
@@ -54,10 +54,10 @@
 				</td>
 			</tr>
 			<tr>
-				<td><a href="./d3/color_scale.html" style="font-size: 16px">color scale</a></td>
+				<td><a href="./test/color_scale.html" style="font-size: 16px">color scale</a></td>
 				<td>
 					<?php
-						$filename = "./d3/color_scale.html";
+						$filename = "./test/color_scale.html";
 						if (file_exists($filename)) {
 							echo date("F d Y H:i:s.", filemtime($filename));
 						}
@@ -68,10 +68,10 @@
 				</td>
 			</tr>
 			<tr>
-				<td><a href="./d3/svg_path.html" style="font-size: 16px">svg paths</a></td>
+				<td><a href="./test/svg_path.html" style="font-size: 16px">svg paths</a></td>
 				<td>
 					<?php
-						$filename = "./d3/svg_path.html";
+						$filename = "./test/svg_path.html";
 						if (file_exists($filename)) {
 							echo date("F d Y H:i:s.", filemtime($filename));
 						}
@@ -82,10 +82,10 @@
 				</td>
 			</tr>
 			<tr>
-				<td><a href="./ajaxtest.html" style="font-size: 16px">ajax test</a></td>
+				<td><a href="./test/ajaxtest.html" style="font-size: 16px">ajax test</a></td>
 				<td>
 					<?php
-						$filename = "./ajaxtest.html";
+						$filename = "./test/ajaxtest.html";
 						if (file_exists($filename)) {
 							echo date("F d Y H:i:s.", filemtime($filename));
 						}
@@ -97,10 +97,10 @@
 				<td style="max-width: 350px;"></td>
 			</tr>
 			<tr>
-				<td><a href="./d3/enter_exit.html" style="font-size: 16px">enter/exit test</a></td>
+				<td><a href="./test/enter_exit.html" style="font-size: 16px">enter/exit test</a></td>
 				<td>
 					<?php
-						$filename = "./d3/enter_exit.html";
+						$filename = "./test/enter_exit.html";
 						if (file_exists($filename)) {
 							echo date("F d Y H:i:s.", filemtime($filename));
 						}
