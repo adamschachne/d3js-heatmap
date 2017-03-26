@@ -239,15 +239,43 @@
 		});
 	}
 
-	// index in selected_gene of which needs to be requested
+	// index in selected_gene of which is changed
 	function updateHeatmap(gene_index) {
-		var numRows = gene_data.length;
+		var numRows = selected_gene.length;
+		var numCols = gene_data.length;
 		var rectWidth = width/columns.length;
 
 		// geneID data in samples
 		var sampleGroups = samples.selectAll("g").data(selected_gene)
 		// do something with update selection TODO
 		// if the selected gene changes etc..
+		sampleGroups.each(function(d,i) {
+			console.log(d);
+			var geneID = d;
+			var rowIndex = i;
+			d3.select(this)
+				.attr("class", geneID)
+				.selectAll("rect").data(gene_data[rowIndex])
+					.attr("width", rectWidth)
+					.attr("height", function() {
+						if (numRows == 1) {
+							return height/2;
+						}
+						else {
+							return height/numRows;
+						}
+					})
+					.attr("x", function(d,i) {return i*rectWidth})
+					.attr("y", function(d,i) {
+						if (numRows == 1) {
+							return height/4;
+						}
+						else {
+							return height/numRows*rowIndex;
+						}
+					})
+					.attr("fill", function(d,i) {return colorScale(d)});
+		})
 
 		sampleGroups.enter().append("g")
 			.attr("class", function(d) {return d;})
