@@ -132,7 +132,7 @@ if (isset($_POST['email']) && isset($_POST['password']) && isset($_POST['confirm
         <h2 class="ui black image header">
           <!-- <img src="assets/images/logo.png" class="image"> -->
           <div class="content">
-            Sign up
+            Create an account
           </div>
         </h2>
         <form action="./signup.php" method="post" class="ui large form">
@@ -155,7 +155,7 @@ if (isset($_POST['email']) && isset($_POST['password']) && isset($_POST['confirm
                 <input type="password" name="confirm" placeholder="Confirm your password">
               </div>
             </div>
-            <div class="ui fluid large black submit button">Signup</div>
+            <div class="ui fluid large black submit button">Sign Up</div>
           </div>
 
           <div class="ui error message"></div>

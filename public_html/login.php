@@ -94,7 +94,13 @@ $db->close();
             }
           })
         ;
-        <?php if ($error != "") {echo "$('.form').form('add errors', ['$error']);";} ?>
+        <?php if ($error != "") {
+          echo "$('.form').form('add errors', ['$error']);\n";
+          if ($error == 'Invalid username or password') {
+            echo "setTimeout(function() { $('#signup').transition('pulse') }, 500);\n";
+          }
+        }
+        ?>
       });
     </script>
   </head>
@@ -129,7 +135,7 @@ $db->close();
 
         </form>
 
-        <div class="ui message">
+        <div id="signup" class="ui message">
           Don't have an account? <a href="./signup.php">Sign Up</a>
         </div>
       </div>
