@@ -111,7 +111,7 @@ $db->close();
         <h2 class="ui black image header">
           <!-- <img src="assets/images/logo.png" class="image"> -->
           <div class="content">
-            Log-in to your account
+            Login to your account
           </div>
         </h2>
         <form action="./login.php" method="post" class="ui large form">
@@ -119,7 +119,7 @@ $db->close();
             <div class="field">
               <div class="ui left icon input">
                 <i class="user icon"></i>
-                <input type="text" name="email" placeholder="E-mail address">
+                <input type="text" name="email" autofocus placeholder="E-mail address">
               </div>
             </div>
             <div class="field">

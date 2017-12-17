@@ -55,6 +55,7 @@ $db->close();
       </div>
       <div class="row">
         <div class="center aligned column">
+          <a href="https://github.com/adamschachne/gene-heatmap" class="ui large primary button">GitHub</a>
           <a href="./logout.php" class="ui large button">Log out</a>
         </div>
       </div>
